@@ -1,0 +1,267 @@
+install.packages('rafalib')
+
+library(rafalib)
+install.packages('dplyr')
+
+library(downloader) 
+url <- "https://raw.githubusercontent.com/genomicsclass/dagdata/master/inst/extdata/femaleMiceWeights.csv"
+filename <- "femaleMiceWeights.csv" 
+download(url, destfile=filename)
+set.seed(1)
+dat <- read.csv(filename)
+i <- sample(13:24, 1)
+dat$Bodyweight[i]
+
+install.packages('dplyr')
+library(downloader)
+url="https://raw.githubusercontent.com/genomicsclass/dagdata/master/inst/extdata/msleep_ggplot2.csv"
+filename <- basename(url)
+download(url,filename)
+dat <- read.csv(filename)
+class(dat)
+library(dplyr)
+nrow(filter(dat, order=="Primates"))
+dat2 <- filter(dat, order=="Primates")
+class(dat2)
+class(filter(dat, order=="Primates") %>% select(sleep_total))
+dat3 <-filter(dat, order=="Primates") %>% select(sleep_total)
+sleep <- unlist(dat3)
+mean(sleep)
+filter(dat, order=="Primates") %>% summarize(mean(sleep_total))
+
+library(downloader) 
+url <- "https://raw.githubusercontent.com/genomicsclass/dagdata/master/inst/extdata/femaleControlsPopulation.csv"
+filename <- basename(url)
+download(url, destfile=filename)
+x <- unlist( read.csv(filename) )
+mean(x)
+set.seed(1)
+sample_weight <- sample(x, 5)
+abs(mean(sample_weight) - mean(x))
+
+set.seed(5)
+X <- sample(x, 5)
+abs(mean(X) - mean(x))
+
+set.seed(1)
+n <- 1000
+nulls <- vector('numeric', n)
+for( i in 1:n){
+  X <- sample(x, 50)
+  nulls[i] <- mean(X)-mean(x)
+}
+sum(abs(nulls)>1)/n
+
+install.packages("gapminder")
+library(gapminder)
+data(gapminder)
+head(gapminder)
+dat1952 <- gapminder[ gapminder$year == 1952,]
+x <- dat1952$lifeExp
+mean(x<=40)
+mean(x<=60)-mean(x<=40)
+
+library(downloader) 
+url <- "https://raw.githubusercontent.com/genomicsclass/dagdata/master/inst/extdata/femaleControlsPopulation.csv"
+filename <- basename(url)
+download(url, destfile=filename)
+x <- unlist( read.csv(filename) )
+set.seed(1)
+n <- 1000
+averages50 <- vector('numeric', n)
+for( i in 1:n){
+  X <- sample(x, 50)
+  averages50[i] <- mean(X)
+}
+set.seed(1)
+n <- 1000
+averages5 <- vector('numeric', n)
+for( i in 1:n){
+  X <- sample(x, 5)
+  averages5[i] <- mean(X)
+}
+library(rafalib) 
+###mypa(1,2)r is optional. it is used to put both plots on one page
+mypar(1,2)
+hist(averages50, xlim=c(18,30))
+hist(averages5, xlim=c(18,30))
+
+qnorm(.975)
+pnorm((25-23.9)/0.43)-pnorm((23-23.9)/0.43)
+
+library(downloader) 
+url <- "https://raw.githubusercontent.com/genomicsclass/dagdata/master/inst/extdata/mice_pheno.csv"
+filename <- basename(url)
+download(url, destfile=filename)
+dat <- read.csv(filename) 
+###We will remove the lines that contain missing values:
+dat <- na.omit( dat )
+View(dat)
+
+library(dplyr)
+male <- dat[dat$Sex == 'M',]
+male_chow <- male[male$Diet == 'chow',]
+x <- male_chow$Bodyweight
+mean(x)
+x <- filter(dat, Sex=="M" & Diet=="chow") %>% select(Bodyweight) %>% unlist
+mean(x)
+
+library(rafalib)
+popsd(x)
+
+set.seed(1)
+X<- sample(x, 25)
+mean(X)
+
+y <- filter(dat, Sex=="M" & Diet=="hf") %>% select(Bodyweight) %>% unlist
+mean(y)
+popsd(y)
+set.seed(1)
+Y<- sample(y, 25)
+mean(Y)
+
+abs(mean(y)-mean(x)-(mean(Y)-mean(X)))
+
+x <- filter(dat, Sex=="F" & Diet=="chow") %>% select(Bodyweight) %>% unlist
+mean(x)
+
+library(rafalib)
+popsd(x)
+
+set.seed(1)
+X<- sample(x, 25)
+mean(X)
+
+y <- filter(dat, Sex=="F" & Diet=="hf") %>% select(Bodyweight) %>% unlist
+mean(y)
+popsd(y)
+set.seed(1)
+Y<- sample(y, 25)
+mean(Y)
+
+abs(mean(y)-mean(x)-(mean(Y)-mean(X)))
+
+
+library(downloader) 
+url <- "https://raw.githubusercontent.com/genomicsclass/dagdata/master/inst/extdata/mice_pheno.csv"
+filename <- basename(url)
+download(url, destfile=filename)
+dat <- na.omit( read.csv(filename) )
+pnorm(1)-pnorm(-1)
+pnorm(2)-pnorm(-2)
+
+y <- filter(dat, Sex=="M" & Diet=="chow") %>% select(Bodyweight) %>% unlist
+z <- ( y - mean(y) ) / popsd(y)
+mean( abs(z) <=1 )
+mean( abs(z) <=3 )
+
+y <- filter(dat, Sex=="M" & Diet=="chow") %>% select(Bodyweight) %>% unlist
+avgs <- replicate(10000, mean( sample(y, 25)))
+mypar(1,2)
+hist(avgs)
+qqnorm(avgs)
+qqline(avgs)
+mean(avgs)
+popsd(avgs)
+
+library(downloader)
+url <- "https://raw.githubusercontent.com/genomicsclass/dagdata/master/inst/extdata/femaleMiceWeights.csv"
+filename <- "femaleMiceWeights.csv"
+if(!file.exists("femaleMiceWeights.csv")) download(url,destfile=filename)
+dat <- read.csv(filename)
+
+set.seed(1)
+n <- 100
+sides <- 6
+p <- 1/sides
+zs <- replicate(10000,{
+  x <- sample(1:sides,n,replace=TRUE)
+  (mean(x==6) - p) / sqrt(p*(1-p)/n)
+}) 
+qqnorm(zs)
+abline(0,1)#confirm it's well approximated with normal distribution
+mean(abs(zs) > 2)
+
+ps <- c(0.5,0.5,0.01,0.01)
+ns <- c(5,30,30,100)
+library(rafalib)
+mypar(4,2)
+for(i in 1:4){
+  p <- ps[i]
+  sides <- 1/p
+  n <- ns[i]
+  zs <- replicate(10000,{
+    x <- sample(1:sides,n,replace=TRUE)
+    (mean(x==1) - p) / sqrt(p*(1-p)/n)
+  }) 
+  hist(zs,nclass=7)
+  qqnorm(zs)
+  abline(0,1)
+}
+
+X <- filter(dat, Diet=="chow") %>% select(Bodyweight) %>% unlist
+Y <- filter(dat, Diet=="hf") %>% select(Bodyweight) %>% unlist
+mean(X)
+sd(X)
+2 * ( 1-pnorm(2/sd(X) * sqrt(12) ) )
+
+SE <- sqrt(var(X)/12 + var(Y)/12)
+(mean(Y)-mean(X))/SE
+1-pt(3, df=3)
+1-pt(3, df=15)
+1-(pnorm(2.055174)-pnorm(-2.055174))
+t.test(X, Y)
+
+url <- "https://raw.githubusercontent.com/genomicsclass/dagdata/master/inst/extdata/babies.txt"
+filename <- basename(url)
+download(url, destfile=filename)
+babies <- read.table("babies.txt", header=TRUE)
+bwt.nonsmoke <- filter(babies, smoke==0) %>% select(bwt) %>% unlist 
+bwt.smoke <- filter(babies, smoke==1) %>% select(bwt) %>% unlist
+library(rafalib)
+mean(bwt.nonsmoke)-mean(bwt.smoke)
+popsd(bwt.nonsmoke)
+popsd(bwt.smoke)
+
+set.seed(1)
+dat.ns <- sample(bwt.nonsmoke, 25)
+dat.s <- sample(bwt.smoke, 25)
+t.test(dat.ns, dat.s)
+SE <- sqrt(var(dat.ns)/25 + var(dat.s)/25)
+tval <- (mean(dat.ns)-mean(dat.s))/SE
+1-(pnorm(tval)-pnorm(-tval))
+qnorm(0.995)*SE
+
+qt(1-0.01/2, df=48)*sqrt( var(dat.ns)/25 + var(dat.s)/25 )
+
+set.seed(1)
+dat.ns <- sample(bwt.nonsmoke, 5)
+dat.s <- sample(bwt.smoke, 5)
+t.test(dat.ns, dat.s)
+
+N <- 5
+set.seed(1)
+alpha <- 0.05
+B<- 2000
+reject <- function(N, alpha=0.05){
+  dat.ns <- sample(bwt.nonsmoke, N)
+  dat.s <- sample(bwt.smoke, N)
+  pval <- t.test(dat.ns, dat.s)$p.value
+  pval<alpha
+}
+rejections <- replicate(B, reject(N))
+mean(rejections)
+N <- 90
+
+Ns=c(10,60,90,120)
+res <- sapply(Ns, function(N){
+  set.seed(1)
+  rejects <- replicate(10000,{
+    dat.ns <- sample(bwt.nonsmoke , N)
+    dat.s <- sample(bwt.smoke , N)
+    t.test(dat.s, dat.ns)$p.value < 0.01
+  })
+  mean(rejects)
+})
+Ns[ which.min( abs( res - .8) ) ] 
+
